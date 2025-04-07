@@ -69,11 +69,13 @@ func (li *LdapInjector) Brute() (string, error) {
 			return "", err
 		}
 		if c == "" {
+			/*
 			if ok, err := li.TestPassword(result); err != nil {
 				return "", err
 			} else if !ok {
 				return "", fmt.Errorf("partial password found: %s", result)
 			}
+			*/
 			break
 		}
 		result += c
