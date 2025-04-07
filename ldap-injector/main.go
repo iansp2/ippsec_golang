@@ -51,10 +51,9 @@ func (li *LdapInjector) TestPassword(password string) (bool, error) {
 
 func (li *LdapInjector) TestCharacter(prefix string) (string, error) {
 	for _, c := range li.Charset {
-		if ok, err := li.TestPassword(fmt.Sprintf("%s%s", prefix, string(c))); err != nil {
+		if ok, err := li.TestPassword(fmt.Sprintf("%s%s*", prefix, string(c))); err != nil {
 			return "", err
 		} else if ok {
-			fmt.Print(string(c))
 			return string(c), nil
 		}
 	}
