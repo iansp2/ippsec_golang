@@ -3,7 +3,7 @@ Repo to save projects as I learn on IppSec's Golang for Hacking youtube course.
 
 Projects roadmap:
 - LDAP injector (in progress)
-- Automating boolean sql injections (originally in Python, I will implement in go)
+- Automating boolean sql injections (ippsec did it in Python, I am implementing in Go)
 
 ## LDAP injector
 The HTB machine used for this is Ghost (https://app.hackthebox.com/machines/616)
@@ -17,4 +17,5 @@ The HTB machine used for this is Ghost (https://app.hackthebox.com/machines/616)
 - Create NetHTTP and FastHTTP implementations to illustrate how you can have different objects used as parameters on implementation without having to change inhector object
 
 ## Automating boolean sql injections
-- Python implementation created
+- Python implementation created (source: https://www.youtube.com/watch?v=mF8Q1FhnU70)
+- Go implementation in progress
