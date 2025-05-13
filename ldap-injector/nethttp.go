@@ -24,11 +24,11 @@ func NewHttpBruteImpl(method, url, username string, expectedStatusCode int, head
 	}
 }
 
-func (c *NetHttpBruteImpl) Do(password string) (bool, error) {
+func (c *NetHttpBruteImpl) Do(password string) error {
 	payload := fmt.Sprintf(`1_ldap-username=%s&1_ldap-secret=%s&0=[{},"$K1"]`, c.username, password)
 	req, err := http.NewRequest(c.method, c.url, strings.NewReader(payload))
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	for k, v := range c.headers {
@@ -43,9 +43,12 @@ func (c *NetHttpBruteImpl) Do(password string) (bool, error) {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return false, err
+		return err
 	}
 	defer resp.Body.Close()
 
-	return resp.StatusCode == c.expectedStatusCode, nil
+	if resp.StatusCode != c.expectedStatusCode {
+		return NewPasswordErrorWithCode(fmt.Errorf("invalid password: %s", password), resp.StatusCode)
+	}
+	return nil
 }

