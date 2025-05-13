@@ -14,7 +14,10 @@ The HTB machine used for this is Ghost (https://app.hackthebox.com/machines/616)
 
 ### EP02: https://www.youtube.com/watch?v=BhLpqRev80s
 - Dependency injection so that injector only handles injection and takes in object that handles http client. Interface is used for this.
-- Create NetHTTP and FastHTTP implementations to illustrate how you can have different objects used as parameters on implementation without having to change inhector object
+- Create NetHTTP and FastHTTP implementations to illustrate how you can have different objects used as parameters on implementation without having to change injector object.
+
+### EP03: https://www.youtube.com/watch?v=9_aJN3-mOFw
+- Error handling
 
 ## Automating boolean sql injections
 - Python implementation created (source: https://www.youtube.com/watch?v=mF8Q1FhnU70)
